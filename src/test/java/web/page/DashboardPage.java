@@ -3,21 +3,14 @@ package web.page;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import lombok.val;
-import org.openqa.selenium.Keys;
-import web.data.DataHelper;
 
+import static com.codeborne.selenide.Condition.attribute;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 public class DashboardPage {
   private SelenideElement heading = $("[data-test-id=dashboard]");
-  private SelenideElement card1AddButton = $("#root > div > ul > li:nth-child(1) > div > button");
-  private SelenideElement card2AddButton = $("#root > div > ul > li:nth-child(2) > div > button");
-  private SelenideElement amount = $("[data-test-id=amount] input");
-  private SelenideElement from = $("[data-test-id=from] input");
-  private SelenideElement transferButton = $("#root > div > form > button.button.button_view_extra.button_size_s.button_theme_alfa-on-white");
-  private SelenideElement cancelButton = $("#root > div > form > button:nth-child(3)");
   private SelenideElement refresh = $("#root > div > button");
   private ElementsCollection cards = $$(".list__item div");
   private final String balanceStart = "баланс: ";
@@ -27,30 +20,16 @@ public class DashboardPage {
     heading.shouldBe(visible);
   }
 
-  public DashboardPage addMoneyToCard1(DataHelper.TransferInfo data) {
-    card1AddButton.click();
-    amount.setValue(data.getAmount());
-    from.setValue(data.getNumber2());
-    transferButton.click();
-    return new DashboardPage();
-  }
-
-  public DashboardPage addMoneyToCard2(DataHelper.TransferInfo data) {
-    card2AddButton.click();
-    amount.setValue(data.getAmount());
-    from.setValue(data.getNumber1());
-    transferButton.click();
-    return new DashboardPage();
+  public TransferPage transferToCard (String id) {
+    val button = cards.find(attribute("data-test-id", id));
+    button.$("button").click();
+    return new TransferPage();
   }
 
   public int getCardBalance(String id) {
     refresh.click();
-    for (SelenideElement card : cards) {
-      if (card.getAttribute("data-test-id").equals(id)) {
-        return extractBalance(card.text());
-      }
-    }
-    return 0;
+    val number = cards.find(attribute("data-test-id", id));
+    return extractBalance(number.text());
   }
 
   private int extractBalance(String text) {
@@ -58,22 +37,5 @@ public class DashboardPage {
     val finish = text.indexOf(balanceFinish);
     val value = text.substring(start + balanceStart.length(), finish);
     return Integer.parseInt(value);
-  }
-
-  public void cleanUp() {
-    card1AddButton.click();
-    amount.doubleClick();
-    amount.sendKeys(Keys.DELETE);
-    amount.doubleClick();
-    amount.sendKeys(Keys.DELETE);
-    from.doubleClick();
-    from.sendKeys(Keys.DELETE);
-    from.doubleClick();
-    from.sendKeys(Keys.DELETE);
-    from.doubleClick();
-    from.sendKeys(Keys.DELETE);
-    from.doubleClick();
-    from.sendKeys(Keys.DELETE);
-    cancelButton.click();
   }
 }

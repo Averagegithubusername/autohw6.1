@@ -5,10 +5,7 @@ import net.jodah.failsafe.internal.util.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import web.data.DataHelper;
-import web.page.DashboardPage;
-import web.page.LoginPageV1;
 import web.page.LoginPageV2;
-import web.page.LoginPageV3;
 
 import static com.codeborne.selenide.Selenide.open;
 
@@ -20,59 +17,25 @@ class MoneyTransferTest {
     Configuration.holdBrowserOpen = true;
   }
 
-    @Test
-    void shouldTransferMoneyBetweenOwnCardsV1() {
-      open("http://localhost:9999");
-      var loginPage = new LoginPageV1();
-//      var loginPage = open("http://localhost:9999", LoginPageV1.class);
-      var authInfo = DataHelper.getAuthInfo();
-      var verificationPage = loginPage.validLogin(authInfo);
-      var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-      verificationPage.validVerify(verificationCode);
-      var transferFrame = new DashboardPage();
-      var transferInfo = DataHelper.getCardTransferInfo("1000");
-      transferFrame.addMoneyToCard1(transferInfo);
-      transferFrame.cleanUp();
-      transferFrame.addMoneyToCard2(transferInfo);
-      var actual = transferFrame.getCardBalance(transferInfo.getId1());
-      var expected = 10000;
-      Assert.isTrue(actual == expected, "Ошибка");
-    }
-
   @Test
   void shouldTransferMoneyBetweenOwnCardsV2() {
     open("http://localhost:9999");
     var loginPage = new LoginPageV2();
-//    var loginPage = open("http://localhost:9999", LoginPageV2.class);
     var authInfo = DataHelper.getAuthInfo();
     var verificationPage = loginPage.validLogin(authInfo);
     var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-    verificationPage.validVerify(verificationCode);
-    var transferFrame = new DashboardPage();
+    var dashboardPage = verificationPage.validVerify(verificationCode);
     var transferInfo = DataHelper.getCardTransferInfo("1000");
-    transferFrame.addMoneyToCard1(transferInfo);
-    transferFrame.cleanUp();
-    transferFrame.addMoneyToCard2(transferInfo);
-    var actual = transferFrame.getCardBalance(transferInfo.getId1());
-    var expected = 10000;
-    Assert.isTrue(actual == expected, "Ошибка");
-  }
-
-  @Test
-  void shouldTransferMoneyBetweenOwnCardsV3() {
-    var loginPage = open("http://localhost:9999", LoginPageV3.class);
-    var authInfo = DataHelper.getAuthInfo();
-    var verificationPage = loginPage.validLogin(authInfo);
-    var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-    verificationPage.validVerify(verificationCode);
-    var transferFrame = new DashboardPage();
-    var transferInfo = DataHelper.getCardTransferInfo("1000");
-    transferFrame.addMoneyToCard1(transferInfo);
-    transferFrame.cleanUp();
-    transferFrame.addMoneyToCard2(transferInfo);
-    var actual = transferFrame.getCardBalance(transferInfo.getId1());
-    var expected = 10000;
-    Assert.isTrue(actual == expected, "Ошибка");
+    var transferPage = dashboardPage.transferToCard(transferInfo.getId1());
+    transferPage.addMoneyToCard1(transferInfo);
+    var actualBalance1 = dashboardPage.getCardBalance(transferInfo.getId1());
+    var expectedBalance1 = 11000;
+    Assert.isTrue(actualBalance1 == expectedBalance1, "Ошибка баланса карты 1");
+    var actualBalance2 = dashboardPage.getCardBalance(transferInfo.getId2());
+    var expectedBalance2 = 9000;
+    Assert.isTrue(actualBalance2 == expectedBalance2, "Ошибка баланса карты 2");
+    dashboardPage.transferToCard(transferInfo.getId1()).cleanUp();
+    dashboardPage.transferToCard(transferInfo.getId2()).addMoneyToCard2(transferInfo);
   }
 }
 
