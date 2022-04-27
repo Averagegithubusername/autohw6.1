@@ -36,6 +36,12 @@ class MoneyTransferTest {
     Assert.isTrue(actualBalance2 == expectedBalance2, "Ошибка баланса карты 2");
     dashboardPage.transferToCard(transferInfo.getId1()).cleanUp();
     dashboardPage.transferToCard(transferInfo.getId2()).addMoneyToCard2(transferInfo);
+    var actualBalance3 = dashboardPage.getCardBalance(transferInfo.getId1());
+    var expectedBalance3 = 10000;
+    Assert.isTrue(actualBalance3 == expectedBalance3, "Ошибка баланса карты 1");
+    var actualBalance4 = dashboardPage.getCardBalance(transferInfo.getId1());
+    var expectedBalance4 = 10000;
+    Assert.isTrue(actualBalance4 == expectedBalance4, "Ошибка баланса карты 2");
   }
 }
 
